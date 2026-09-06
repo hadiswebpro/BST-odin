@@ -56,6 +56,7 @@ class Tree {
             }
 
         }
+        return false;
     }
 
 
@@ -231,142 +232,222 @@ class Tree {
 
 
     preOrderForEach(callback) {
-    if (!callback) {
-        throw new Error("Callback is required");
+      
+        if (!callback) {
+           throw new Error("Callback is required");
+        }
+
+        const traverse = (node) => {
+            if (node === null) {
+              return;
+            }
+
+            callback(node.data);
+
+            traverse(node.left);
+
+            traverse(node.right);
+        };
+
+        traverse(this.root);
     }
 
-    const traverse = (node) => {
-        if (node === null) {
-            return;
+
+    postOrderForEach(callback) {
+   
+        if (!callback) {
+            throw new Error("Callback is required");
         }
 
-        callback(node.data);
+        const traverse = (node) => {
+            if (node === null) {
+               return;
+            }
 
-        traverse(node.left);
+            traverse(node.left);
 
-        traverse(node.right);
-    };
+            traverse(node.right);
 
-    traverse(this.root);
-}
+            callback(node.data);
+        };
 
-
-postOrderForEach(callback) {
-    if (!callback) {
-        throw new Error("Callback is required");
+       traverse(this.root);
     }
 
-    const traverse = (node) => {
-        if (node === null) {
-            return;
+
+    height(value) {
+
+        let current = this.root;
+
+        while (current !== null) {
+            if (value === current.data) {
+               break;
+            }
+
+            if (value < current.data) {
+               current = current.left;
+            } else {
+               current = current.right;
+            }
         }
 
-        traverse(node.left);
-
-        traverse(node.right);
-
-        callback(node.data);
-    };
-
-    traverse(this.root);
-}
-
-height(value) {
-    let current = this.root;
-
-    while (current !== null) {
-        if (value === current.data) {
-            break;
+        if (current === null) {
+            return undefined;
         }
 
-        if (value < current.data) {
-            current = current.left;
-        } else {
-            current = current.right;
-        }
+        const getHeight = (node) => {
+            if (node === null) {
+               return -1;
+            }
+
+            const leftHeight = getHeight(node.left);
+            const rightHeight = getHeight(node.right);
+
+            return 1 + Math.max(leftHeight, rightHeight);
+        };
+
+        return getHeight(current);
     }
 
-    if (current === null) {
+
+    depth(value) {
+   
+        let current = this.root;
+        let depth = 0;
+
+        while (current !== null) {
+            if (value === current.data) {
+               return depth;
+            }
+
+            if (value < current.data) {
+               current = current.left;
+            } else {
+               current = current.right;
+            }
+
+            depth++;
+        }
+
         return undefined;
     }
 
-    const getHeight = (node) => {
-        if (node === null) {
-            return -1;
-        }
 
-        const leftHeight = getHeight(node.left);
-        const rightHeight = getHeight(node.right);
+    isBalanced() {
+    
+        const checkBalance = (node) => {
+            if (node === null) {
+               return 0;
+            }
 
-        return 1 + Math.max(leftHeight, rightHeight);
-    };
+           const leftHeight = checkBalance(node.left);
 
-    return getHeight(current);
-}
+            if (leftHeight === -1) {
+              return -1;
+            }
 
-depth(value) {
-    let current = this.root;
-    let depth = 0;
+            const rightHeight = checkBalance(node.right);
 
-    while (current !== null) {
-        if (value === current.data) {
-            return depth;
-        }
+            if (rightHeight === -1) {
+               return -1;
+            }
 
-        if (value < current.data) {
-            current = current.left;
-        } else {
-            current = current.right;
-        }
+            if (Math.abs(leftHeight - rightHeight) > 1) {
+               return -1;
+            }
 
-        depth++;
+           return 1 + Math.max(leftHeight, rightHeight);
+        };
+
+        return checkBalance(this.root) !== -1;
     }
 
-    return undefined;
-}
 
+    rebalance() {
+  
+        const values = [];
 
-isBalanced() {
-    const checkBalance = (node) => {
-        if (node === null) {
-            return 0;
-        }
+        this.inOrderForEach((value) => {
+            values.push(value);
+        });
 
-        const leftHeight = checkBalance(node.left);
-
-        if (leftHeight === -1) {
-            return -1;
-        }
-
-        const rightHeight = checkBalance(node.right);
-
-        if (rightHeight === -1) {
-            return -1;
-        }
-
-        if (Math.abs(leftHeight - rightHeight) > 1) {
-            return -1;
-        }
-
-        return 1 + Math.max(leftHeight, rightHeight);
-    };
-
-    return checkBalance(this.root) !== -1;
-}
-
-
-rebalance() {
-    const values = [];
-
-    this.inOrderForEach((value) => {
-        values.push(value);
-    });
-
-    this.root = this.buildTree(values);
-}
-
-
-
-
+        this.root = this.buildTree(values);
+    }
 
 }
+
+
+const randomNumbers = Array.from(
+    { length: 15 },
+    () => Math.floor(Math.random() * 100)
+);
+
+const tree = new Tree(randomNumbers);
+
+console.log("Initial array:");
+console.log(randomNumbers);
+
+console.log("\nIs balanced?");
+console.log(tree.isBalanced());
+
+console.log("\nLevel Order:");
+const levelOrder = [];
+tree.levelOrderForEach((value) => {
+    levelOrder.push(value);
+});
+console.log(levelOrder);
+
+console.log("\nPre Order:");
+const preOrder = [];
+tree.preOrderForEach((value) => {
+    preOrder.push(value);
+});
+console.log(preOrder);
+
+console.log("\nPost Order:");
+const postOrder = [];
+tree.postOrderForEach((value) => {
+    postOrder.push(value);
+});
+console.log(postOrder);
+
+
+// Add numbers greater than 100
+tree.insert(101);
+tree.insert(102);
+tree.insert(103);
+tree.insert(104);
+tree.insert(105);
+
+console.log("\nAfter inserting numbers > 100:");
+console.log("Is balanced?");
+console.log(tree.isBalanced());
+
+
+// Rebalance
+tree.rebalance();
+
+console.log("\nAfter rebalancing:");
+console.log("Is balanced?");
+console.log(tree.isBalanced());
+
+console.log("\nLevel Order:");
+const newLevelOrder = [];
+tree.levelOrderForEach((value) => {
+    newLevelOrder.push(value);
+});
+console.log(newLevelOrder);
+
+console.log("\nPre Order:");
+const newPreOrder = [];
+tree.preOrderForEach((value) => {
+    newPreOrder.push(value);
+});
+console.log(newPreOrder);
+
+console.log("\nPost Order:");
+const newPostOrder = [];
+tree.postOrderForEach((value) => {
+    newPostOrder.push(value);
+});
+console.log(newPostOrder);
